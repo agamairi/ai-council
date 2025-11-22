@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Council</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-title">
+            <div class="logo">AC</div>
+            <span class="title">AI Council</span>
+        </div>
+        <span class="subtitle">Many AI perspectives</span>
+        <button class="settings-button" id="settings-button" onclick="openSettings()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"></path>
+            </svg>
+        </button>
+    </div>
+    
+    <!-- Chat Container -->
+    <div class="chat-container" id="chat-container">
+        <div class="chat-messages" id="messages">
+            <div class="empty-state">
+                <div class="empty-icon">💬</div>
+                <div class="empty-text">Welcome to AI Council</div>
+                <div class="empty-subtext">Click the + button to choose mode and start discussing</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Input Area -->
+    <div class="input-container">
+        <div class="input-wrapper">
+            <!-- File attachment indicator -->
+            <div class="file-attachment" id="file-attachment">
+                <span>📎</span>
+                <span class="file-name" id="file-name"></span>
+                <button class="remove-file" onclick="removeFile()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Input box container -->
+            <div class="input-box-container">
+                <!-- Plus button -->
+                <button class="plus-button" id="plus-button" onclick="togglePlusMenu()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                </button>
+                
+                <!-- Plus menu -->
+                <div class="plus-menu" id="plus-menu">
+                    <!-- Mode Selection -->
+                    <div class="menu-section">
+                        <div class="menu-label">Mode</div>
+                        <div class="menu-buttons">
+                            <button class="menu-btn active" data-mode="normal" onclick="selectMode('normal')">
+                                <span class="menu-btn-icon">💬</span>
+                                <span>Normal Discussion</span>
+                            </button>
+                            <button class="menu-btn" data-mode="web_search" onclick="selectMode('web_search')">
+                                <span class="menu-btn-icon">🔍</span>
+                                <span>Web Search</span>
+                            </button>
+                            <button class="menu-btn" data-mode="deep_research" onclick="selectMode('deep_research')">
+                                <span class="menu-btn-icon">🔬</span>
+                                <span>Deep Research</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Model selector (for Web Search mode) -->
+                        <div class="model-select-wrapper" id="model-select-wrapper">
+                            <select class="model-select" id="model-select">
+                                <option value="">Loading models...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Tools (for Normal mode) -->
+                    <div class="menu-section" id="tools-section">
+                        <div class="menu-label">Tools</div>
+                        <div class="menu-buttons">
+                            <div class="tool-toggle-item" onclick="toggleTool('document')">
+                                <div class="tool-toggle-label">
+                                    <span class="menu-btn-icon">📄</span>
+                                    <span>Documents</span>
+                                </div>
+                                <label class="toggle-switch-small">
+                                    <input type="checkbox" id="toggle-document">
+                                    <span class="toggle-slider-small"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="tool-toggle-item" onclick="toggleTool('calculator')">
+                                <div class="tool-toggle-label">
+                                    <span class="menu-btn-icon">🧮</span>
+                                    <span>Calculator</span>
+                                </div>
+                                <label class="toggle-switch-small">
+                                    <input type="checkbox" id="toggle-calculator">
+                                    <span class="toggle-slider-small"></span>
+                                </label>
+                            </div>
+                            
+                            <button class="menu-btn" onclick="openFilePicker()">
+                                <span class="menu-btn-icon">📎</span>
+                                <span>Upload Document</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Input box wrapper with drag-drop -->
+                <div class="input-box-wrapper" id="input-box-wrapper">
+                    <textarea 
+                        id="question" 
+                        class="input-box" 
+                        rows="1"
+                        placeholder="Ask your question..."
+                        onkeydown="handleKeyPress(event)"
+                    ></textarea>
+                    <div class="drag-indicator">📎 Drop file here</div>
+                    <button id="send-btn" class="send-button" onclick="conveneCouncil()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="progress" class="progress-indicator"></div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal" onclick="if(event.target === this) closeSettings()">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Council Settings</h2>
+                <button class="close-button" onclick="closeSettings()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Endpoint Configuration -->
+                <div class="endpoint-section">
+                    <div class="endpoint-header">
+                        <h3 class="endpoint-title">Ollama Endpoint</h3>
+                        <span class="endpoint-status connected" id="endpoint-status">Connected</span>
+                    </div>
+                    
+                    <div class="endpoint-input-group">
+                        <input 
+                            type="text" 
+                            class="form-input endpoint-input" 
+                            id="endpoint-input"
+                            value="http://localhost:11434"
+                            placeholder="http://localhost:11434"
+                        >
+                        <button class="btn btn-secondary btn-icon" onclick="testEndpoint()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Test
+                        </button>
+                    </div>
+                    
+                    <div class="models-info">
+                        <span class="models-count" id="models-count">0 models detected</span>
+                        <button class="refresh-models" onclick="refreshModels()">
+                            🔄 Refresh Models
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Advisors Configuration -->
+                <div id="advisors-container"></div>
+                <button class="btn btn-add" onclick="addAdvisor()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    <span>Add Advisor</span>
+                </button>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="resetSettings()">Reset to Default</button>
+                <button class="btn btn-primary" onclick="saveAndCloseSettings()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden file input -->
+    <input type="file" id="file-input" accept=".pdf,.txt,.docx,.doc" onchange="handleFileSelect(this.files)">
+    
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='./js/app.js') }}"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</body>
+</html>
