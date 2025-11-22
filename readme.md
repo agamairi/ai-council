@@ -193,6 +193,9 @@ ollama pull granite3.3:2b
 List all available models
 ollama list
 
+## Screenshots
+<table> <tr> <td><img src="https://github.com/user-attachments/assets/423f537a-a629-4e0f-bae7-91e714c03a25" alt="Screenshot 1" /></td> </tr> <tr> <td><img src="https://github.com/user-attachments/assets/87055d97-0634-466e-9be4-7050095a8801" alt="Screenshot 2" /></td> </tr> <tr> <td><img src="https://github.com/user-attachments/assets/f0fe7376-acb2-4006-a9fc-13f239528b37" alt="Screenshot 3" /></td> </tr> </table>
+
 ## 🔧 Advanced Usage
 
 ### Running on a Different Port
